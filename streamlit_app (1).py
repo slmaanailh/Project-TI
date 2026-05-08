@@ -574,10 +574,14 @@ elif menu == "🏭 Produksi":
 
         st.markdown(f"#### 🎯 Hasil Produksi: ~**{int(jumlah * 10)} bungkus**")
 
+        # ── Tombol Mulai Produksi ─────────────────────────
         if st.button("🚀 Mulai Produksi", use_container_width=False):
-            kebutuhan = [(jenis, jumlah), ("Minyak Goreng", jumlah * 0.2)]
-            kebutuhan.append(("Gula" if rasa == "Manis" else "Garam",
-                              jumlah * 0.05 if rasa == "Manis" else jumlah * 0.03))
+            kebutuhan = [
+                (jenis,           jumlah),
+                ("Minyak Goreng", kebutuhan_minyak),
+                ("Gas LPG",       kebutuhan_gas),
+                (nama_bumbu,      kebutuhan_bumbu),
+            ]
 
             cukup = True
             for nama_b, kebutuhan_b in kebutuhan:
@@ -595,20 +599,33 @@ elif menu == "🏭 Produksi":
 
                 queries = []
                 for nama_b, kebutuhan_b in kebutuhan:
-                    queries.append(("UPDATE bahan SET stok = stok - ? WHERE nama = ?", (float(kebutuhan_b), str(nama_b))))
-                queries.append(("INSERT INTO produksi(tanggal, jenis, rasa, jumlah) VALUES(?,?,?,?)",
-                                (tanggal_prod, str(jenis), str(rasa), float(jumlah))))
+                    if kebutuhan_b > 0:
+                        queries.append((
+                            "UPDATE bahan SET stok = stok - ? WHERE nama = ?",
+                            (float(kebutuhan_b), str(nama_b))
+                        ))
+
+                queries.append((
+                    "INSERT INTO produksi(tanggal, jenis, rasa, jumlah) VALUES(?,?,?,?)",
+                    (tanggal_prod, str(jenis), str(rasa), float(jumlah))
+                ))
 
                 fresh_check = get_db()
-                cek_p = fresh_check.execute("SELECT id FROM produk WHERE nama = ?", (nama_produk,)).fetchone()
+                cek_p = fresh_check.execute(
+                    "SELECT id FROM produk WHERE nama = ?", (nama_produk,)
+                ).fetchone()
                 fresh_check.close()
 
                 if cek_p is None:
-                    queries.append(("INSERT INTO produk(nama, jenis, rasa, stok, harga) VALUES(?,?,?,?,?)",
-                                    (str(nama_produk), str(jenis), str(rasa), hasil_produk, harga)))
+                    queries.append((
+                        "INSERT INTO produk(nama, jenis, rasa, stok, harga) VALUES(?,?,?,?,?)",
+                        (str(nama_produk), str(jenis), str(rasa), hasil_produk, harga)
+                    ))
                 else:
-                    queries.append(("UPDATE produk SET stok = stok + ? WHERE nama = ?",
-                                    (hasil_produk, str(nama_produk))))
+                    queries.append((
+                        "UPDATE produk SET stok = stok + ? WHERE nama = ?",
+                        (hasil_produk, str(nama_produk))
+                    ))
 
                 ok = db_write(queries)
                 if ok:
