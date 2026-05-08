@@ -512,6 +512,49 @@ elif menu == "🏭 Produksi":
         with col2:
             jumlah = st.number_input("Jumlah Pisang (kg)", min_value=1.0, step=0.5)
 
+         # ── Atur Kebutuhan Bahan ──────────────────────────
+        st.markdown("#### ⚙️ Atur Kebutuhan Bahan")
+        st.caption("Nilai default dihitung otomatis dari jumlah pisang. Kamu bisa ubah sesuai kebutuhan.")
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            kebutuhan_minyak = st.number_input(
+                "🫙 Minyak Goreng (liter)",
+                min_value=0.0,
+                value=round(jumlah * 0.2, 2),
+                step=0.1,
+                key="input_minyak"
+            )
+            kebutuhan_gas = st.number_input(
+                "🔥 Gas LPG (tabung)",
+                min_value=0.0,
+                value=round(jumlah * 0.05, 2),
+                step=0.1,
+                key="input_gas"
+            )
+        with col_b:
+            if rasa == "Manis":
+                kebutuhan_bumbu = st.number_input(
+                    "🍬 Gula (kg)",
+                    min_value=0.0,
+                    value=round(jumlah * 0.05, 2),
+                    step=0.01,
+                    key="input_bumbu"
+                )
+                nama_bumbu   = "Gula"
+                satuan_bumbu = "kg"
+            else:
+                kebutuhan_bumbu = st.number_input(
+                    "🧂 Garam (kg)",
+                    min_value=0.0,
+                    value=round(jumlah * 0.03, 2),
+                    step=0.01,
+                    key="input_bumbu"
+                )
+                nama_bumbu   = "Garam"
+                satuan_bumbu = "kg"
+
+        # ── Estimasi Kebutuhan ────────────────────────────
         kebutuhan_list = [
             (jenis, jumlah, "kg"),
             ("Minyak Goreng", round(jumlah * 0.2, 2), "liter"),
